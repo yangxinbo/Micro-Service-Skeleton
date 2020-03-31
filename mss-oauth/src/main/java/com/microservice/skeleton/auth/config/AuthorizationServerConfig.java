@@ -57,11 +57,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 //        return new JdbcTokenStore(dataSource);
 //    }
 
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.withClientDetails(clientDetails());
-    }
-
     @Bean
     public ClientDetailsService clientDetails() {
         return new JdbcClientDetailsService(dataSource);
@@ -70,15 +65,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Bean
     public WebResponseExceptionTranslator<OAuth2Exception> webResponseExceptionTranslator() {
         return new MssWebResponseExceptionTranslator();
-    }
-
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.tokenStore(redisTokenStore())
-                .userDetailsService(userDetailsService)
-                .authenticationManager(authenticationManager);
-        endpoints.tokenServices(defaultTokenServices());
-        endpoints.exceptionTranslator(webResponseExceptionTranslator());//认证异常翻译
     }
 
     /**
@@ -96,6 +82,20 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         tokenServices.setAccessTokenValiditySeconds(60 * 60 * 12); // token有效期自定义设置，默认12小时
         tokenServices.setRefreshTokenValiditySeconds(60 * 60 * 24 * 7);//默认30天，这里修改
         return tokenServices;
+    }
+
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.withClientDetails(clientDetails());
+    }
+
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints.tokenStore(redisTokenStore())
+                .userDetailsService(userDetailsService)
+                .authenticationManager(authenticationManager);
+        endpoints.tokenServices(defaultTokenServices());
+        endpoints.exceptionTranslator(webResponseExceptionTranslator());//认证异常翻译
     }
 
     @Override
